@@ -1,51 +1,77 @@
-// lib/api/serverApi.ts
-import { nextServer } from './api';
-import { cookies } from 'next/headers';
-import type { Note, NotesHTTPResponse } from '@/types/note';
+// lib/api/clientApi.ts
+import { api } from './api';
 import type { User } from '@/types/user';
-import type { AxiosResponse } from 'axios';
+import type { Note, NoteFormValues, NotesHTTPResponse } from '@/types/note';
 
-// Повертаємо сирі cookies в заголовку Cookie
-async function cookieHeaders(): Promise<Record<'Cookie', string> | undefined> {
-  const jar = await cookies();
-  const accessToken = jar.get('accessToken')?.value;
-  const refreshToken = jar.get('refreshToken')?.value;
+// ======================= //
+//        AUTH
+// ======================= //
 
-  const parts: string[] = [];
-  if (accessToken) parts.push(`accessToken=${accessToken}`);
-  if (refreshToken) parts.push(`refreshToken=${refreshToken}`);
+export const register = async (
+  body: { email: string; password: string }
+): Promise<User> => {
+  const { data } = await api.post<User>('/auth/register', body);
+  return data;
+};
 
-  return parts.length ? { Cookie: parts.join('; ') } : undefined;
-}
+export const login = async (
+  body: { email: string; password: string }
+): Promise<User> => {
+  const { data } = await api.post<User>('/auth/login', body);
+  return data;
+};
 
-// ----------- NOTES -----------
+export const logout = async (): Promise<void> => {
+  await api.post('/auth/logout');
+};
+
+export const checkSession = async (): Promise<boolean> => {
+  try {
+    await api.get('/auth/session');
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// ======================= //
+//        USER
+// ======================= //
+
+export const getMe = async (): Promise<User> => {
+  const { data } = await api.get<User>('/users/me');
+  return data;
+};
+
+export const updateMe = async (
+  body: { username: string }
+): Promise<User> => {
+  const { data } = await api.patch<User>('/users/me', body);
+  return data;
+};
+
+// ======================= //
+//        NOTES
+// ======================= //
+
 export const fetchNotes = async (
   params?: { search?: string; page?: number; tag?: string }
 ): Promise<NotesHTTPResponse> => {
-  const headers = await cookieHeaders();
-  const res = await nextServer.get<NotesHTTPResponse>('/notes', {
-    params,
-    headers,
-  });
-  return res.data;
+  const { data } = await api.get<NotesHTTPResponse>('/notes', { params });
+  return data;
 };
 
 export const fetchNoteById = async (id: string): Promise<Note> => {
-  const headers = await cookieHeaders();
-  const res = await nextServer.get<Note>(`/notes/${id}`, { headers });
-  return res.data;
+  const { data } = await api.get<Note>(`/notes/${id}`);
+  return data;
 };
 
-// ----------- USER -----------
-export const getMe = async (): Promise<User> => {
-  const headers = await cookieHeaders();
-  const res = await nextServer.get<User>('/users/me', { headers });
-  return res.data;
+export const createNote = async (body: NoteFormValues): Promise<Note> => {
+  const { data } = await api.post<Note>('/notes', body);
+  return data;
 };
 
-// ----------- AUTH -----------
-export const checkSession = async (): Promise<AxiosResponse<User>> => {
-  const headers = await cookieHeaders();
-  // повертаємо повний AxiosResponse, як вимагає завдання
-  return await nextServer.get<User>('/auth/session', { headers });
+export const deleteNote = async (id: string): Promise<Note> => {
+  const { data } = await api.delete<Note>(`/notes/${id}`);
+  return data;
 };

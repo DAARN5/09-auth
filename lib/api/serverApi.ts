@@ -1,5 +1,5 @@
-import { nextServer } from './api';
 import { cookies } from 'next/headers';
+import { serverApiInstance } from './axiosInstance';
 import type { Note, NotesHTTPResponse } from '@/types/note';
 import type { User } from '@/types/user';
 import type { AxiosResponse } from 'axios';
@@ -22,7 +22,7 @@ export const fetchNotes = async (
   params?: { search?: string; page?: number; tag?: string }
 ): Promise<NotesHTTPResponse> => {
   const headers = await cookieHeaders();
-  const res = await nextServer.get<NotesHTTPResponse>('/notes', {
+  const res = await serverApiInstance.get<NotesHTTPResponse>('/notes', {
     params,
     headers,
   });
@@ -31,14 +31,14 @@ export const fetchNotes = async (
 
 export const fetchNoteById = async (id: string): Promise<Note> => {
   const headers = await cookieHeaders();
-  const res = await nextServer.get<Note>(`/notes/${id}`, { headers });
+  const res = await serverApiInstance.get<Note>(`/notes/${id}`, { headers });
   return res.data;
 };
 
 // ----------- USER -----------
 export const getMe = async (): Promise<User> => {
   const headers = await cookieHeaders();
-  const res = await nextServer.get<User>('/users/me', { headers });
+  const res = await serverApiInstance.get<User>('/users/me', { headers });
   return res.data;
 };
 
@@ -46,5 +46,5 @@ export const getMe = async (): Promise<User> => {
 export const checkSession = async (): Promise<AxiosResponse<User>> => {
   const headers = await cookieHeaders();
   //  повертаємо повний AxiosResponse, як вимагає завдання
-  return await nextServer.get<User>('/auth/session', { headers });
+  return await serverApiInstance.get<User>('/auth/session', { headers });
 };
