@@ -1,6 +1,7 @@
+import { nextServer } from './api';
 import { cookies } from 'next/headers';
 import { serverApiInstance } from './axiosInstance';
-import type { Note, NotesHTTPResponse } from '@/types/note';
+import type { Note, Note-sHTTPResponse } from '@/types/note';
 import type { User } from '@/types/user';
 import type { AxiosResponse } from 'axios';
 
